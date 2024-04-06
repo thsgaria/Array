@@ -9,6 +9,7 @@ package com.mycompany.prowayswing;
  * @author aluno
  */
 public class Produto {
+    public int codigo;
     public String nome;
     public double precoUnitario;
     public int quantidade;
