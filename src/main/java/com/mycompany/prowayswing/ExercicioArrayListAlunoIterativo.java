@@ -41,10 +41,10 @@ public class ExercicioArrayListAlunoIterativo {
                     apagar();
                     break;
                 case 3:
-                    calcularMedia();
+         //           calcularMedia();
                     break;
                 case 4:
-                    listar();
+                   // listar();
                     break;
             }
 
@@ -106,17 +106,17 @@ public class ExercicioArrayListAlunoIterativo {
             }
         }
     }
-    public double calcularMedia(){
-     var nomeAlunos = new ArrayList<String>();
-    }
-    for (int i = 0; i < alunos.size(); i++) {
-            var produto = alunos.get(i);
-            nomeAlunos.add(produto.codigo + " - " + produto.nome);
-            JOptionPane.showMessageDialog(null, );
-   
-
-    public static void main(String[] args) {
-        new ExercicioArrayListAlunoIterativo().apresentarMenu();
-    }
+//    public double calcularMedia(){
+//     var nomeAlunos = new ArrayList<String>();
+//    }
+//    for (int i = 0; i < alunos.size(); i++) {
+//            var produto = alunos.get(i);
+//            nomeAlunos.add(produto.codigo + " - " + produto.nome);
+//            JOptionPane.showMessageDialog(null, );
+//   
+//
+//    public static void main(String[] args) {
+//        new ExercicioArrayListAlunoIterativo().apresentarMenu();
+//    }
 }
 
