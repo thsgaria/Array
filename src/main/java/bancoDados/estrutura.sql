@@ -12,7 +12,7 @@ CREATE TABLE filmes (
 id_categoria INT NOT NULL,
     nome VARCHAR(100),
 
-FOREIGN KEY(id_categoria) REFERENCES categorias (id)
+FOREIGN KEY(id_categoria) REFERENCES categorias (id),
 PRIMARY KEY (id)
 );
 
@@ -26,6 +26,11 @@ INSERT INTO categorias (nome) VALUES
 
 INSERT INTO filmes (id_categoria, nome) VALUES
 (1, "IT A coisa"),
-(6, "Interestelar");
+(6, "Interestelar"),
+(4, "Debi & Loide"),
+(3, "Amor de Redenção"),
+(6, "Transformers"),
+(2, "Arranha-Céu"),
+(5, "O Poderoso Chefão");
 
 

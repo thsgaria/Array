@@ -5,6 +5,10 @@
 package telas;
 
 import bancoDados.Banco;
+import com.mycompany.prowayswing.entidades.Categoria;
+import com.mycompany.prowayswing.entidades.Filme;
+import com.mycompany.prowayswing.repositorios.CategoriaRepositorio;
+import com.mycompany.prowayswing.repositorios.FilmeRepositorio;
 import javax.swing.JOptionPane;
 import java.sql.*;
 import javax.swing.table.DefaultTableModel;
@@ -107,7 +111,6 @@ public class FilmeJFrame extends javax.swing.JFrame {
 
         jLabel1.setText("Categoria");
 
-        jComboBoxCategoria.setSelectedIndex(-1);
         jComboBoxCategoria.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jComboBoxCategoriaActionPerformed(evt);
@@ -154,7 +157,7 @@ public class FilmeJFrame extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButtonEditar)
+                                .addComponent(jButtonEditar, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jButtonApagar)
                                 .addGap(0, 0, Short.MAX_VALUE))
@@ -184,136 +187,84 @@ public class FilmeJFrame extends javax.swing.JFrame {
 
     private void jButtonCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCadastrarActionPerformed
 
-        try {
-            var nome = jTextFieldNome.getText();
-            var categoria = (String)jComboBoxCategoria.getSelectedItem();
-            var parts = categoria.split(" - ");
-            var idCategoria = Integer.parseInt(parts[0]);
-            
-            var conexao = Banco.conectar();
-            String query;
-            if (idEscolhido == -1) {
-            query = "INSERT INTO filmes (id_categoria, nome) VALUES (?, ?)";
-            var prepareStatement = conexao.prepareStatement(query);
-            prepareStatement.setInt(1,idCategoria);
-            prepareStatement.setString(2,nome);
-            prepareStatement.execute();
-            } else {
-            query = "UPDATE filmes SET id_categoria = ?, nome = ? WHERE id = ?";
-            var prepareStatement = conexao.prepareStatement(query);
-            prepareStatement.setInt(1,idCategoria);
-            prepareStatement.setString(2,nome);
-            prepareStatement.setInt(3, idEscolhido);
-            prepareStatement.execute(); 
-                idEscolhido = -1;
-            }
-            listarFilmes();
-            JOptionPane.showMessageDialog(null, "Filme cadastrado com sucesso");
-
-            JOptionPane.showMessageDialog(null, nome);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        var nome = jTextFieldNome.getText();
+        var categoria = (Categoria) jComboBoxCategoria.getSelectedItem();
+        //Instanciando um objeto da classe Filme
+        var filme = new Filme();
+        //Preenchendo as propriedades do objeto filme com os dados que
+        // o usuário preencheu
+        filme.nome = nome;
+        filme.categoria = categoria;
+        //Instanciando um objeto da classe FilmeRepositorio,para realizar
+        //o insert na tabela de filmes
+        var filmeRepositorio = new FilmeRepositorio();
+        if (idEscolhido == -1) {
+            //Chamando o método inserir passando o objeto filme como parâmetro
+            filmeRepositorio.inserir(filme);
+        } else {
+            filme.id = idEscolhido;
+            filmeRepositorio.alterar(filme);
+            idEscolhido = -1; //Retornar para o modo cadastro
         }
+        listarFilmes();
+        JOptionPane.showMessageDialog(null, "Filme cadastrado com sucesso");
+
+        JOptionPane.showMessageDialog(null, nome);
 
 
     }//GEN-LAST:event_jButtonCadastrarActionPerformed
     private void listarFilmes() {
-        try {
+        var modeloTabela = (DefaultTableModel) jTableFilmes.getModel();
+        //remover todos os elementos
+        modeloTabela.setRowCount(0);
+        var filmeRepositorio = new FilmeRepositorio();
+        var filmes = filmeRepositorio.obterTodos();
+        for (int i = 0; i < filmes.size(); i++) {
+            var filme = filmes.get(i);
+            modeloTabela.addRow(new Object[]{
+                filme.id,
+                filme.categoria.nome,
+                filme.nome
+            });
+        }
 
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
+    }
 
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-            var query = """
-                        SELECT filmes.id,
-                        categorias.nome AS 'categoria',
-                        filmes.nome FROM filmes 
-                        INNER JOIN categorias ON (filmes.id_categoria = categorias.id);""";
-            var statement = conexao.createStatement();
-            var dados = statement.executeQuery(query);//Tipo ResultSet
-            var modeloTabela = (DefaultTableModel) jTableFilmes.getModel();
-            //remover todos os elementos
-            modeloTabela.setRowCount(0);
-            while (dados.next()) {
-                var id = Integer.parseInt(dados.getString("id"));
-                var nome = dados.getString("nome");
-                var categoriaNome = dados.getString("categoria");
-                modeloTabela.addRow(new Object[]{
-                    id, categoriaNome, nome
-                });
-
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+    private void popularComboBoxCategorias() {
+        var categoriaRepositorio = new CategoriaRepositorio();
+        var categorias = categoriaRepositorio.obterTodos();
+        for (int i = 0; i < categorias.size(); i++) {
+            var categoria = categorias.get(i);
+            jComboBoxCategoria.addItem(categoria);
         }
     }
-        private void popularComboBoxCategorias() {
-            try {
-            var conexao = Banco.conectar();
-            var query = "SELECT id, nome FROM categorias";
-            var statement = conexao.createStatement();
-            var dados = statement.executeQuery(query);
-            while (dados.next()){
-                var categoriaNome = dados.getString("nome");
-                var categoriaId = dados.getInt("id");
-                jComboBoxCategoria.addItem(categoriaId + " - "+categoriaNome);
-                    }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
 
     private void jTextFieldNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextFieldNomeActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextFieldNomeActionPerformed
 
     private void jButtonApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonApagarActionPerformed
-            try {
-            var conexao = Banco.conectar();
-            var indiceLinhaSelecionada = jTableFilmes.getSelectedRow();
-            var idEscolhidoParaApagar = Integer.parseInt(jTableFilmes.getValueAt(indiceLinhaSelecionada, 0).toString());
-            var query = "DELETE FROM filmes WHERE id = ?";
-            var prepareStatement = conexao.prepareCall(query);
-            prepareStatement.setInt(1,idEscolhidoParaApagar);
-            prepareStatement.execute();
-            listarFilmes();
-            JOptionPane.showMessageDialog(null, "Filme apagado com sucesso");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        var indiceLinhaSelecionada = jTableFilmes.getSelectedRow();
+        var idEscolhidoParaApagar = Integer.parseInt(jTableFilmes.getValueAt(indiceLinhaSelecionada, 0).toString());
+        var filmeRepositorio = new FilmeRepositorio();
+        filmeRepositorio.apagar(idEscolhidoParaApagar);
+        listarFilmes();
+        JOptionPane.showMessageDialog(null, "Filme apagado com sucesso");
     }//GEN-LAST:event_jButtonApagarActionPerformed
 
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
         var indiceLinhaSelecionada = jTableFilmes.getSelectedRow();
         idEscolhido = Integer.parseInt(jTableFilmes.getValueAt(indiceLinhaSelecionada, 0).toString());
-        try {
-       var conexao = Banco.conectar();
-            var query = """
-                        SELECT filmes.id,
-                        filmes.id_categoria,
-                        filmes.nome FROM filmes
-                        WHERE id = """ + idEscolhido;
-            var statement = conexao.createStatement();
-            var dados = statement.executeQuery(query);//Tipo ResultSet
-            var categoriaNome = jTableFilmes.getValueAt(indiceLinhaSelecionada, 1).toString();
-            if(dados.next()){
-                var nome = dados.getString("nome");
-                var idCategoria = dados.getInt("id_categoria");
-                jTextFieldNome.setText(nome);
-                var mensagem = idCategoria + " - " + categoriaNome;
-                for (int i = 0; i < jComboBoxCategoria.getItemCount(); i++) {
-                var item = (String)jComboBoxCategoria.getItemAt (i);
-                if (mensagem.equals(item)){
-                    jComboBoxCategoria.setSelectedItem(item);
-                }
-                }
+        var filmeRepositorio = new FilmeRepositorio();
+        var filme = filmeRepositorio.obterPorId(idEscolhido);
+        jTextFieldNome.setText(filme.nome);
+        for (int i = 0; i < jComboBoxCategoria.getItemCount(); i++) {
+            var item = (Categoria) jComboBoxCategoria.getItemAt(i);
+            if (item.id == filme.categoria.id) {
+                jComboBoxCategoria.setSelectedItem(item);
             }
-            
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-       
+
     }//GEN-LAST:event_jButtonEditarActionPerformed
 
     private void jComboBoxCategoriaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxCategoriaActionPerformed
@@ -334,16 +285,24 @@ public class FilmeJFrame extends javax.swing.JFrame {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
                     break;
+
                 }
             }
         } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(FilmeJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FilmeJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(FilmeJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FilmeJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(FilmeJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FilmeJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
+
         } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(FilmeJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(FilmeJFrame.class
+                    .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
@@ -359,7 +318,7 @@ public class FilmeJFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButtonApagar;
     private javax.swing.JButton jButtonCadastrar;
     private javax.swing.JButton jButtonEditar;
-    private javax.swing.JComboBox<String> jComboBoxCategoria;
+    private javax.swing.JComboBox<Categoria> jComboBoxCategoria;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelListafilmes;
     private javax.swing.JLabel jLabelNome;
