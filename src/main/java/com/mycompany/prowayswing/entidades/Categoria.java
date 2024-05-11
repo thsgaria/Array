@@ -10,12 +10,27 @@ package com.mycompany.prowayswing.entidades;
  */
 public class Categoria {
 
-    public int id;
-    public String nome;
-//Refaturação
+    private int id;
+    private String nome;
+
+    public void setId(int idCategoria) {
+        id = idCategoria;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setNome(String nomeCategoria) {
+        nome = nomeCategoria;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
     @Override
     public String toString() {
         return nome;
     }
-
 }

@@ -182,7 +182,7 @@ public class CategoriaJFrame extends javax.swing.JFrame {
         for (var i = 0; i < categorias.size(); i++) {
             var categoria = categorias.get(i);
             modeloTabela.addRow(new Object[]{
-                categoria.id, categoria.nome
+                categoria.getId(), categoria.getNome()
             });
         }
     }
